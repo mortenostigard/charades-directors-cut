@@ -19,8 +19,16 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git commit *)",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: PR descriptions and commit messages must stand alone (project CLAUDE.md). No references to chat context such as the audit, as we discussed, you asked, our chat, earlier. Re-read the body/message argument before proceeding.\"}}'"
+            "command": "jq -r '.tool_input.command // \"\"' | grep -qE '^[[:space:]]*git[[:space:]]+commit([[:space:]]|$)' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"REMINDER: PR descriptions and commit messages must stand alone (project CLAUDE.md). No references to chat context such as the audit, as we discussed, you asked, our chat, earlier. Re-read the body/message argument before proceeding.\"}}' || true"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__github__merge_pull_request",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c -f .claude/hooks/merge-check.jq"
           }
         ]
       }
